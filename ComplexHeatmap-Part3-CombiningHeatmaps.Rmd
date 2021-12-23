@@ -1,0 +1,200 @@
+---
+title: "ComplexHeatmap-Part3"
+author: "Brandon"
+date: "12/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#https://bioconductor.org/packages/release/bioc/manuals/ComplexHeatmap/man/ComplexHeatmap.pdf
+```
+
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+#BiocManager::install("ComplexHeatmap")
+
+library(ComplexHeatmap)
+```
+
+# Combining Heatmap in a single figures   
+```{r}
+set.seed(123)
+mat1 = matrix(rnorm(80, 2), 8, 10)
+mat1 = rbind(mat1, matrix(rnorm(40, -2), 4, 10))
+rownames(mat1) = paste0("R", 1:12)
+colnames(mat1) = paste0("C", 1:10)
+
+head(mat1)
+```
+
+
+```{r}
+mat2 = matrix(runif(60, max = 3, min = 1), 6, 10)
+mat2 = rbind(mat2, matrix(runif(60, max = 2, min = 0), 6, 10))
+rownames(mat2) = paste0("R", 1:12)
+colnames(mat2) = paste0("C", 1:10)
+
+head(mat2)
+```
+
+
+```{r}
+le = sample(letters[1:3], 12, replace = TRUE)
+names(le) = paste0("R", 1:12)
+
+ind = sample(12, 12)
+mat1 = mat1[ind, ]
+mat2 = mat2[ind, ]
+le = le[ind]
+
+print(le)
+```
+
+
+```{r}
+ht1 = Heatmap(mat1, name = "rnorm")
+ht1
+```
+
+
+```{r}
+ht2 = Heatmap(mat2, name = "runif")
+ht2
+```
+
+
+```{r}
+ht3 = Heatmap(le, name = "letters")
+ht3
+```
+
+
+```{r}
+ht1 + ht2 + ht3
+```
+```{r}
+ht1 %v% ht2 
+#ht3 cannot be added here since the ncol is different
+```
+
+#  Change the tittles of the combined heatmap
+```{r}
+library(circlize)
+col_rnorm = colorRamp2(c(-3, 0, 3), c("green", "white", "red"))
+col_runif = colorRamp2(c(0, 3), c("white", "orange"))
+col_letters = c("a" = "pink", "b" = "purple", "c" = "blue")
+ht1 = Heatmap(mat1, name = "rnorm", col = col_rnorm,
+    row_title = "Heatmap 1", column_title = "Heatmap 1")
+ht2 = Heatmap(mat2, name = "runif", col = col_runif,
+    row_title = "Heatmap 2", column_title = "Heatmap 2")
+ht3 = Heatmap(le, name = "letters", col = col_letters)
+ht_list = ht1 + ht2 + ht3
+
+draw(ht_list, row_title = "Three heatmaps, row title", row_title_gp = gpar(col = "red"),
+    column_title = "Three heatmaps, column title", column_title_gp = gpar(fontsize = 16))
+
+```
+
+
+# Change the size of individual heatmap
+```{r}
+ht2 = Heatmap(mat2, name = "runif", col = col_runif, width = unit(4, "cm"))
+ht3 = Heatmap(le, name = "letters", col = col_letters, width = unit(5, "mm"))
+ht1 + ht2 + ht3
+```
+
+```{r}
+ht1 = Heatmap(mat1, name = "rnorm", col = col_rnorm, width = unit(4, "cm"))
+ht2 = Heatmap(mat2, name = "runif", col = col_runif, width = unit(6, "cm"))
+ht3 = Heatmap(le, name = "letters", col = col_letters, width = unit(1, "cm"))
+ht1 + ht2 + ht3
+
+
+ht1 = Heatmap(mat1, name = "rnorm", col = col_rnorm, width = unit(8, "cm"))
+ht2 = Heatmap(mat2, name = "runif", col = col_runif, width = unit(8, "cm"))
+ht3 = Heatmap(le, name = "letters", col = col_letters, width = unit(2, "cm"))
+ht1 + ht2 + ht3
+
+```
+# change in gaps between the heatmaps 
+```{r}
+ht1 = Heatmap(mat1, name = "rnorm", col = col_rnorm)
+ht2 = Heatmap(mat2, name = "runif", col = col_runif)
+ht3 = Heatmap(le, name = "letters", col = col_letters)
+ht_list = ht1 + ht2 + ht3
+draw(ht_list, ht_gap = unit(1, "cm"))
+```
+
+# Select the main heatmap 
+
+```{r}
+ht_list = ht2 + ht1 + ht3
+draw(ht_list, main_heatmap = "rnorm")
+
+ht_list = ht2 + ht1 + ht3
+draw(ht_list, main_heatmap = "rnorm", row_dend_side = "right", row_sub_title_side = "left")
+
+```
+# Adding Annotation to the heatmaps (One of them)
+
+```{r}
+ha1 = HeatmapAnnotation(foo1 = 1:10, annotation_name_side = "left")
+ht1 = Heatmap(mat1, name = "rnorm", col = col_rnorm, top_annotation = ha1)
+ht2 = Heatmap(mat2, name = "runif", col = col_runif)
+ht3 = Heatmap(le, name = "letters", col = col_letters)
+ht1 + ht2 + ht3
+
+
+ht1 = Heatmap(mat1, name = "rnorm", col = col_rnorm)
+ht2 = Heatmap(mat2, name = "runif", col = col_runif, top_annotation = ha1)
+ht3 = Heatmap(le, name = "letters", col = col_letters)
+ht1 + ht2 + ht3
+
+
+```
+```{r}
+ha1 = HeatmapAnnotation(foo1 = 1:10, bar1 = anno_points(1:10), 
+    annotation_name_side = "left")
+ha2 = HeatmapAnnotation(bar2 = anno_barplot(1:10))
+
+ht1 = Heatmap(mat1, name = "rnorm", col = col_rnorm, top_annotation = ha1)
+ht2 = Heatmap(mat2, name = "runif", col = col_runif, top_annotation = ha2)
+ht3 = Heatmap(le, name = "letters", col = col_letters)
+
+ht_list = ht1 + ht2 + ht3
+
+draw(ht_list, ht_gap = unit(c(6, 2), "mm"))
+```
+
+```{r}
+ha1 = rowAnnotation(foo = 1:12, bar = anno_barplot(1:12, width = unit(4, "cm")))
+ht1 = Heatmap(mat1, name = "rnorm", col = col_rnorm, row_km = 2)
+ht1 + ha1
+```
+
+
+```{r}
+rowAnnotation(foo = 1:12) +
+    Heatmap(mat1, name = "rnorm", col = col_rnorm, row_km = 2) + 
+    rowAnnotation(bar = anno_barplot(1:12, width = unit(4, "cm"))) +
+    Heatmap(mat2, name = "runif", col = col_runif)
+```
+```{r}
+mat1= matrix(rnorm(80, 2), 8, 10)
+mat2 = matrix(runif(60, max = 3, min = 1), 8, 10)
+mat1t = t(mat1)
+mat2t = t(mat2)
+
+ht1 = Heatmap(mat1t, name = "rnorm", col = col_rnorm, row_km = 2)
+ht2 = Heatmap(mat2t, name = "runif", col = col_runif, row_km = 2)
+ht3 = Heatmap(rbind(letters = le[1:8]), name = "letters", col = col_letters)
+ha = HeatmapAnnotation(foo = anno_barplot(1:8, height = unit(2, "cm")))
+
+ht_list = ht1 %v% ha %v% ht2 %v% ht3
+draw(ht_list, column_km = 3)
+
+```
+

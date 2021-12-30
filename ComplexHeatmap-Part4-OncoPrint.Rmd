@@ -1,0 +1,56 @@
+---
+title: "OncoPrint"
+author: "BrandonYEO"
+date: "12/29/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ComplexHeatmap)
+```
+
+
+
+```{r cars}
+mat = read.table(textConnection(
+"s1,s2,s3
+g1,snv;indel,snv,indel
+g2,,snv;indel,snv
+g3,snv,,indel;snv"), row.names = 1, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+mat = as.matrix(mat)
+mat
+```
+```{r}
+get_type_fun = function(x) strsplit(x, ";")[[1]]
+get_type_fun(mat[1, 1])
+```
+
+
+```{r}
+mat[1, 1]
+get_type_fun(mat[1, 1])
+```
+
+```{r}
+col = c(snv = "red", indel = "blue")
+oncoPrint(mat,
+    alter_fun = list(
+        snv = function(x, y, w, h) grid.rect(x, y, w*0.9, h*0.9, 
+            gp = gpar(fill = col["snv"], col = NA)),
+        indel = function(x, y, w, h) grid.rect(x, y, w*0.9, h*0.4, 
+            gp = gpar(fill = col["indel"], col = NA))
+    ), col = col)
+```
+
+
+```{r}
+mat_list = list(snv = matrix(c(1, 0, 1, 1, 1, 0, 0, 1, 1), nrow = 3),
+                indel = matrix(c(1, 0, 0, 0, 1, 0, 1, 0, 0), nrow = 3))
+rownames(mat_list$snv) = rownames(mat_list$indel) = c("g1", "g2", "g3")
+colnames(mat_list$snv) = colnames(mat_list$indel) = c("s1", "s2", "s3")
+mat_list
+```
+
+

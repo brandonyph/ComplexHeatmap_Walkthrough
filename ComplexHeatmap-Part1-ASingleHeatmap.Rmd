@@ -11,7 +11,8 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 
 #https://bioconductor.org/packages/release/bioc/manuals/ComplexHeatmap/man/ComplexHeatmap.pdf
-
+#https://github.com/jokergoo/ComplexHeatmap
+#https://jokergoo.github.io/ComplexHeatmap-reference/book/oncoprint.html#oncoprint-general-settings
 
 ```
 
@@ -68,11 +69,14 @@ mat2[1, 1] = 100000
 Heatmap(mat2, name = "mat", col = col_fun, 
     column_title = "a matrix with outliers")
 ```
+
+
 ```{r}
 Heatmap(mat, name = "mat", col = col_fun, column_title = "mat")
 Heatmap(mat/4, name = "mat", col = col_fun, column_title = "mat/4")
 Heatmap(abs(mat), name = "mat", col = col_fun, column_title = "abs(mat)")
 ```
+
 
 ```{r}
 Heatmap(mat, name = "mat", col = rev(rainbow(10)), 

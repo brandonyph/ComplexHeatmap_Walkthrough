@@ -12,7 +12,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #https://bioconductor.org/packages/release/bioc/manuals/ComplexHeatmap/man/ComplexHeatmap.pdf
 #https://github.com/jokergoo/ComplexHeatmap
-#https://jokergoo.github.io/ComplexHeatmap-reference/book/oncoprint.html#oncoprint-general-settings
 
 ```
 
@@ -24,6 +23,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 
 library(ComplexHeatmap)
 ```
+
 # Chapter 1 Making a Simple Heatmap 
 ## Chpater 1.1 Creating the Dataset
 ```{r}
@@ -49,14 +49,18 @@ mat = mat[sample(nr, nr), sample(nc, nc)] # random shuffle rows and columns
 rownames(mat) = paste0("row", seq_len(nr))
 colnames(mat) = paste0("column", seq_len(nc))
 
-Heatmap(mat)
+View(mat)
+```
 
+
+```{r}
+Heatmap(mat)
 ```
 ## Chapter 1.2 Changing the Colours  
 
 ```{r}
 library(circlize)
-col_fun = colorRamp2(c(-2, 0, 2), c("green", "white", "red"))
+col_fun = colorRamp2(c(-2, 0, 2), c("green", "black", "red"))
 col_fun(seq(-3, 3))
 
 Heatmap(mat, name = "mat", col = col_fun)
@@ -82,16 +86,28 @@ Heatmap(abs(mat), name = "mat", col = col_fun, column_title = "abs(mat)")
 Heatmap(mat, name = "mat", col = rev(rainbow(10)), 
     column_title = "set a color vector for a continuous matrix")
 
+```
+
+
+```{r}
 discrete_mat = matrix(sample(1:4, 100, replace = TRUE), 10, 10)
 colors = structure(1:4, names = c("1", "2", "3", "4")) # black, red, green, blue
+colors
+
+Heatmap(discrete_mat)
+
 Heatmap(discrete_mat, name = "mat", col = colors,
     column_title = "a discrete numeric matrix")
+```
 
+
+```{r}
 discrete_mat = matrix(sample(letters[1:4], 100, replace = TRUE), 10, 10)
 colors = structure(1:4, names = letters[1:4])
 Heatmap(discrete_mat, name = "mat", col = colors,
     column_title = "a discrete character matrix")
 ```
+
 ```{r}
 mat_with_na = mat
 na_index = sample(c(TRUE, FALSE), nrow(mat)*ncol(mat), replace = TRUE, prob = c(1, 9))
@@ -109,6 +125,7 @@ Heatmap(mat,
         column_title = "I am a column title", 
         row_title = "I am a row title")
 ```
+
 ```{r}
 Heatmap(mat, name = "mat", 
         column_title = "I am a column title at the bottom", 
@@ -121,6 +138,7 @@ Heatmap(mat, name = "mat",
 Heatmap(mat, name = "mat", 
         column_title = expression(hat(beta) == (X^t * X)^{-1} * X^t * y)) 
 ```
+
 ## Chapter 1.3 Clustering the Heatmap   
 
 ```{r}
@@ -156,27 +174,34 @@ Heatmap(mat, name = "mat", clustering_distance_rows = function(x, y) 1 - cor(x, 
 
 ```
 
+
 ```{r}
+library(circlize)
 mat_with_outliers = mat
 for(i in  1:10) mat_with_outliers[i, i] = 1000
 robust_dist = function(x, y) {
-    qx = quantile(x, c(0.1, 0.9))
-    qy = quantile(y, c(0.1, 0.9))
-    l = x > qx[1] & x < qx[2] & y > qy[1] & y < qy[2]
-    x = x[l]
-    y = y[l]
-    sqrt(sum((x - y)^2))
+                    qx = quantile(x, c(0.1, 0.9))
+                    qy = quantile(y, c(0.1, 0.9))
+                    l = x > qx[1] & x < qx[2] & y > qy[1] & y < qy[2]
+                    x = x[l]
+                    y = y[l]
+                    sqrt(sum((x - y)^2))
 }
 
 Heatmap(mat_with_outliers, name = "mat", 
     col = colorRamp2(c(-2, 0, 2), c("green", "white", "red")),
     column_title = "dist")
+
+
 Heatmap(mat_with_outliers, name = "mat", 
     col = colorRamp2(c(-2, 0, 2), c("green", "white", "red")),
     clustering_distance_rows = robust_dist,
     clustering_distance_columns = robust_dist,
     column_title = "robust_dist")
+
 ```
+
+
 ## Chapter 1.3.2 Render dendrograms
 
 ```{r}
@@ -216,6 +241,7 @@ m2 = matrix(1:100, nr = 10, byrow = TRUE)
 Heatmap(m2, name = "mat", row_dend_reorder = FALSE, column_title = "no reordering")
 Heatmap(m2, name = "mat", row_dend_reorder = TRUE, column_title = "apply reordering")
 ```
+
 ## Chapter 1.3.4 Reordering Col Dendogram
 ```{r}
 Heatmap(mat, name = "mat", column_title = "default reordering")
@@ -225,6 +251,7 @@ col_dend = dendsort(hclust(dist(t(mat))))
 Heatmap(mat, name = "mat", cluster_columns = col_dend,
     column_title = "reorder by dendsort")
 ```
+
 ## Chapter 1.4 Set row and column orders
 ```{r}
 Heatmap(mat, name = "mat", row_order = order(as.numeric(gsub("row", "", rownames(mat)))), 
@@ -270,7 +297,7 @@ Heatmap(mat, name = "mat", row_split = 2, column_split = 3)
 
 
 ```{r}
-#SPlit based on Kmeans clusterinh
+#SPlit based on Kmeans clustering
 Heatmap(mat, name = "mat")
 Heatmap(mat, name = "mat", row_km = 5)
 Heatmap(mat, name = "mat", column_km = 5)

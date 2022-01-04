@@ -1,0 +1,193 @@
+---
+title: "ComplexHeatmap Part 1.5 Legend"
+author: "BrandonYEO"
+date: "1/3/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+#BiocManager::install("ComplexHeatmap")
+
+library(ComplexHeatmap)
+library(circlize)
+library(grid)
+library(ggplot2)
+```
+
+```{r}
+set.seed(123)
+mat = matrix(rnorm(100), 10)
+
+library(circlize)
+#Created for individual legend, in complexheatmap, the color follows the heatmap col_fun
+col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "white", "red")) 
+lgd = Legend(col_fun = col_fun)
+
+#Draw out individual Heatmap
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(1, 2)))
+draw(lgd, x = unit(0.9, "npc"), y = unit(0.5, "npc"))
+popViewport()
+```
+```{r}
+ht1 <- Heatmap(mat)
+
+draw(ht1, heatmap_legend_list = list(lgd))
+```
+
+
+# Using in combination with Heatmap() 
+```{r}
+Heatmap(mat, 
+    heatmap_legend_param = list(
+        title = "rnorm", 
+        at = c(-2, 0, 2), 
+        labels = c("neg_two", "zero", "pos_two")
+    )
+  )
+```
+
+Alternatively, create a separate legend object and link it back in the heatmap object 
+```{r}
+
+lgd_list <- list(
+        title = "rnorm", 
+        at = c(-1, 0, 1), 
+        labels = c("neg_two", "zero", "pos_two")
+        )
+
+Heatmap(mat, heatmap_legend_param = lgd_list)
+```
+# The color of the legand follows the heatmap body 
+```{r}
+col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "yellow", "red")) 
+
+lgd_list <- list(title = "foo", 
+                at = c(0, 0.5, 1),
+                label = c("Label1","Label2","Label3")
+                )
+
+Heatmap(mat, col=col_fun, heatmap_legend_param = lgd_list)
+```
+# Changing the size 
+```{r}
+col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "yellow", "red")) 
+
+lgd_list <- list(title = "foo", 
+                at = c(0, 0.5, 1),
+                label = c("Label1","Label2","Label3"),
+                legend_height = unit(6, "cm")
+                )
+
+Heatmap(mat, col=col_fun, heatmap_legend_param = lgd_list)
+```
+# Changing the Width 
+```{r}
+col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "yellow", "red")) 
+
+lgd_list <- list(title = "foo", 
+                at = c(0, 0.5, 1),
+                label = c("Label1","Label2","Label3"),
+                legend_height = unit(6, "cm"),
+                grid_width = unit(4, "cm")
+                )
+
+Heatmap(mat, col=col_fun, heatmap_legend_param = lgd_list)
+```
+
+# Changing Tittle location 
+```{r}
+col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "yellow", "red")) 
+
+lgd_list <- list(title = "foo", 
+                at = c(0, 0.5, 1),
+                label = c("Label1","Label2","Label3"),
+                legend_height = unit(6, "cm"),
+                grid_width = unit(4, "cm"),
+                title_position = "leftcenter-rot"
+                )
+
+Heatmap(mat, col=col_fun, heatmap_legend_param = lgd_list)
+```
+# Changing Heatmap Direction 
+```{r}
+col_fun = colorRamp2(c(0, 0.5, 1), c("blue", "yellow", "red")) 
+
+lgd_list <- list(title = "foo", 
+                at = c(0, 0.5, 1),
+                label = c("Label1","Label2","Label3"),
+                legend_height = unit(6, "cm"),
+                grid_width = unit(4, "cm"),
+                title_position = "topcenter", # some options are not allow horizontal tittle
+                direction = "horizontal"
+                )
+
+Heatmap(mat, col=col_fun, heatmap_legend_param = lgd_list)
+```
+
+# Discrete value in  Heatmap 
+```{r}
+mat2  <- matrix(rep(month.name[1:6],100),ncol=10,nrow=10)
+
+colors = structure(c("blue", "yellow", "red","black", "grey", "pink"), names= month.name[1:6])
+
+lgd_list <- list(title = "Month", 
+                at = month.name[1:6],
+                label = month.name[1:6],
+                legend_height = unit(9, "cm"),
+                grid_width = unit(2, "cm"),
+                title_position = "topcenter"
+                )
+
+Heatmap(mat2,col=colors, heatmap_legend_param = lgd_list)
+```
+
+# Location of legend 
+```{r}
+lgd_list <- list(title = "foo", 
+                at = c(0, 0.5, 1),
+                label = c("Label1","Label2","Label3"),
+                legend_height = unit(6, "cm"),
+                grid_width = unit(4, "cm"),
+                title_position = "topcenter", # some options are not allow horizontal tittle
+                direction = "horizontal"
+                )
+
+ht1 <- Heatmap(mat, heatmap_legend_param = lgd_list)
+
+         
+draw(ht1, heatmap_legend_side = "left")
+```
+
+
+```{r}
+lgd_list <- list(title = "foo", 
+                at = c(0, 0.5, 1),
+                label = c("Label1","Label2","Label3"),
+                legend_height = unit(6, "cm"),
+                grid_width = unit(4, "cm"),
+                title_position = "topcenter", # some options are not allow horizontal tittle
+                direction = "horizontal"
+                )
+ht1 <- Heatmap(mat, heatmap_legend_param = lgd_list)
+
+         
+draw(ht1, heatmap_legend_side = "top")
+
+#Follow https://stackoverflow.com/questions/52794692/complexheatmap-cannot-create-horizontal-legend
+#if you need your discrete legend 
+```
+
+
+
+
+
+
+

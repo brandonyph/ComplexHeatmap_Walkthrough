@@ -165,8 +165,8 @@ Heatmap(mat) + ha
 ```{r}
 
 ha = HeatmapAnnotation(summary = anno_summary(height = unit(4, "cm")))
-v = sample(letters[1:2], 50, replace = TRUE)
-split = sample(letters[1:2], 50, replace = TRUE)
+v =     sample(letters[1:2], 50, replace = TRUE)
+split = sample(letters[3:4], 50, replace = TRUE)
 
 Heatmap(v)
 
@@ -202,23 +202,39 @@ Heatmap(v, name = "mat" ,bottom_annotation = ha, width = unit(2, "cm"))
 
 
 ```{r}
+rm(ht_list)
 m = matrix(rnorm(50*10), nrow = 50)
 ht_list = Heatmap(m, name = "main_matrix")
 
 ha = HeatmapAnnotation(summary = anno_summary(height = unit(3, "cm")))
 v = sample(letters[1:2], 50, replace = TRUE)
-ht_list = ht_list + Heatmap(v, name = "mat1", top_annotation = ha, width = unit(1, "cm"))
 
+ht_list = ht_list + Heatmap(v, name = "mat1", top_annotation = ha, width = unit(1, "cm"))
+draw(ht_list)
+```
+
+
+
+```{r}
 ha = HeatmapAnnotation(summary = anno_summary(gp = gpar(fill = 2:3), 
     height = unit(3, "cm")))
 v = rnorm(50)
 ht_list = ht_list + Heatmap(v, name = "mat2", top_annotation = ha, width = unit(1, "cm"))
 
+draw(ht_list)
+```
+
+
+```{r}
 split = sample(letters[1:2], 50, replace = TRUE)
+
 lgd_boxplot = Legend(labels = c("group a", "group b"), title = "group",
     legend_gp = gpar(fill = c("red", "blue")))
-draw(ht_list, row_split = split, ht_gap = unit(5, "mm"), 
-    heatmap_legend_list = list(lgd_boxplot))
+
+draw(ht_list, 
+       row_split = split, 
+       ht_gap = unit(10, "mm"), 
+       heatmap_legend_list = list(lgd_boxplot))
 ```
 
 # Summing Everything up 

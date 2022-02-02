@@ -1,6 +1,6 @@
 ---
-title: "OncoPrint"
-author: "BrandonYEO"
+title: "OncoPrint_ComplexHeatmap_Part4"
+author: "Brandon_YEO"
 date: "12/29/2021"
 output: html_document
 ---
@@ -9,16 +9,22 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(ComplexHeatmap)
+
+#Chapter 1 - Understanding the oncoprint syntax
+#Chapter 2 - Using oncoprint() in real life
+#Chapter 3 - Using data from TCGAbiolinks, plotting in TCGAvisualize_oncoprint()    
 ```
 
-
+# Chapter 1 - Understanding the oncoprint syntax
 
 ```{r cars}
 mat = read.table(textConnection(
-"s1,s2,s3
-g1,snv;indel,snv,indel
-g2,,snv;indel,snv
-g3,snv,,indel;snv"), row.names = 1, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+                "s1,s2,s3
+                g1,snv;indel,snv,indel
+                g2,,snv;indel,snv
+                g3,snv,,indel;snv"), 
+                row.names = 1, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+
 mat = as.matrix(mat)
 mat
 ```
@@ -27,30 +33,175 @@ get_type_fun = function(x) strsplit(x, ";")[[1]]
 get_type_fun(mat[1, 1])
 ```
 
-
 ```{r}
 mat[1, 1]
 get_type_fun(mat[1, 1])
 ```
 
 ```{r}
-col = c(snv = "red", indel = "blue")
+oncoPrint(mat)
+
+col = c(snv = "yellow", indel = "purple")
 oncoPrint(mat,
     alter_fun = list(
-        snv = function(x, y, w, h) grid.rect(x, y, w*0.9, h*0.9, 
-            gp = gpar(fill = col["snv"], col = NA)),
+        snv = function(x, y, w, h) grid.rect(x*0.999, y, w*0.9, h*0.9, 
+            gp = gpar(fill = col["snv"], col = "black")),
+        
         indel = function(x, y, w, h) grid.rect(x, y, w*0.9, h*0.4, 
-            gp = gpar(fill = col["indel"], col = NA))
-    ), col = col)
+            gp = gpar(fill = col["indel"], col = "green"))), 
+    col = col,
+    alter_fun_is_vectorized = FALSE)
+```
+# Chapter 2 - Using oncoprint in real life
+
+Requirements of input data 
+```{r}
+mat = read.table(system.file("extdata", package = "ComplexHeatmap", 
+    "tcga_lung_adenocarcinoma_provisional_ras_raf_mek_jnk_signalling.txt"), 
+    header = TRUE, stringsAsFactors = FALSE, sep = "\t")
+mat[is.na(mat)] = ""
+rownames(mat) = mat[, 1]
+mat = mat[, -1]
+mat=  mat[, -ncol(mat)]
+mat = t(as.matrix(mat))
+
+mat[1:10, 1:10]
+```
+making the alter_fun structure 
+```{r}
+col = c("HOMDEL" = "blue", "AMP" = "red", "MUT" = "#008000")
+
+alter_fun = list(
+    background = function(x, y, w, h) {
+        grid.rect(x, y, w-unit(2, "pt"), h-unit(2, "pt"), 
+            gp = gpar(fill = "#CCCCCC", col = NA))
+    },
+    # big blue
+    HOMDEL = function(x, y, w, h) {
+        grid.rect(x, y, w-unit(2, "pt"), h-unit(2, "pt"), 
+            gp = gpar(fill = col["HOMDEL"], col = NA))
+    },
+    # big red
+    AMP = function(x, y, w, h) {
+        grid.rect(x, y, w-unit(2, "pt"), h-unit(2, "pt"), 
+            gp = gpar(fill = col["AMP"], col = NA))
+    },
+    # small green
+    MUT = function(x, y, w, h) {
+        grid.rect(x, y, w-unit(2, "pt"), h*0.33, 
+            gp = gpar(fill = col["MUT"], col = NA))
+    }
+)
 ```
 
 
 ```{r}
-mat_list = list(snv = matrix(c(1, 0, 1, 1, 1, 0, 0, 1, 1), nrow = 3),
-                indel = matrix(c(1, 0, 0, 0, 1, 0, 1, 0, 0), nrow = 3))
-rownames(mat_list$snv) = rownames(mat_list$indel) = c("g1", "g2", "g3")
-colnames(mat_list$snv) = colnames(mat_list$indel) = c("s1", "s2", "s3")
-mat_list
+column_title = "OncoPrint for TCGA Lung Adenocarcinoma, genes in Ras Raf MEK JNK signalling"
+
+heatmap_legend_param = list(title = "Alternations", at = c("HOMDEL", "AMP", "MUT"), 
+        labels = c("Deep deletion", "Amplification", "Mutation"))
 ```
+
+
+```{r}
+oncoPrint(mat,
+    alter_fun = alter_fun, col = col, 
+    column_title = column_title, heatmap_legend_param = heatmap_legend_param)
+
+oncoPrint(mat,
+    alter_fun = alter_fun, col = col, 
+    column_title = column_title, heatmap_legend_param = heatmap_legend_param,
+    column_title_gp = gpar(fontsize = 9, fontface = "bold"))
+    
+#You can pass Heatmap() arguments in oncoPrint 
+```
+Removing empty col and rows
+```{r}
+oncoPrint(mat,
+    alter_fun = alter_fun, col = col, 
+    remove_empty_columns = TRUE, remove_empty_rows = TRUE,
+    column_title = column_title, heatmap_legend_param = heatmap_legend_param)
+```
+```{r}
+sample_order = scan(paste0(system.file("extdata", package = "ComplexHeatmap"), 
+    "/sample_order.txt"), what = "character")
+
+oncoPrint(mat,
+    alter_fun = alter_fun, col = col, 
+    row_order = 1:nrow(mat), column_order = sample_order,
+    remove_empty_columns = TRUE, remove_empty_rows = TRUE,
+    column_title = column_title, heatmap_legend_param = heatmap_legend_param)
+```
+```{r}
+oncoPrint(mat,
+    alter_fun = alter_fun, col = col, 
+    top_annotation = HeatmapAnnotation(
+        column_barplot = anno_oncoprint_barplot("MUT", border = TRUE, # only MUT
+            height = unit(4, "cm"))
+    ),
+    right_annotation = rowAnnotation(
+        row_barplot = anno_oncoprint_barplot(c("AMP", "HOMDEL"),  # only AMP and HOMDEL
+            border = TRUE, height = unit(4, "cm"), 
+            axis_param = list(side = "bottom", labels_rot = 90))
+    ),
+    remove_empty_columns = TRUE, remove_empty_rows = TRUE,
+    column_title = column_title, heatmap_legend_param = heatmap_legend_param,
+    column_title_gp = gpar(fontsize = 9, fontface = "bold"))
+```
+oncoprint produce heatmap object, you can add them vertically or horizontally directly
+```{r}
+ht1 <- oncoPrint(mat,
+    alter_fun = alter_fun, col = col, 
+    top_annotation = HeatmapAnnotation(
+        column_barplot = anno_oncoprint_barplot("MUT", border = TRUE, # only MUT
+            height = unit(4, "cm"))
+    ),
+    right_annotation = rowAnnotation(
+        row_barplot = anno_oncoprint_barplot(c("AMP", "HOMDEL"),  # only AMP and HOMDEL
+            border = TRUE, height = unit(4, "cm"), 
+            axis_param = list(side = "bottom", labels_rot = 90))
+    ),
+    remove_empty_columns = TRUE, remove_empty_rows = TRUE,
+    column_title = column_title, heatmap_legend_param = heatmap_legend_param,
+    column_title_gp = gpar(fontsize = 9, fontface = "bold"))
+
+
+ht1 + ht1 
+```
+
+# Chapter 3 - Using data from TCGAbiolinks, plotting in TCGAvisualize_oncoprint()
+
+```{r}
+library(TCGAbiolinks)
+mut <- GDCquery_Maf(tumor = "ACC", pipelines = "mutect")
+
+TCGAvisualize_oncoprint(mut = mut, genes = mut$Hugo_Symbol[1:20], rm.empty.columns = TRUE)
+```
+
+
+```{r}
+TCGAvisualize_oncoprint(mut = mut, 
+                genes = mut$Hugo_Symbol[1:10],
+                color=c("background"="#CCCCCC","DEL"="purple","INS"="yellow","SNP"="brown"))
+```
+
+
+```{r}
+clin <- GDCquery_clinic("TCGA-ACC","clinical")
+
+clin_2 <- clin[,c("bcr_patient_barcode","disease","gender","ajcc_pathologic_stage","race","vital_status")]
+
+TCGAvisualize_oncoprint(mut = mut, 
+                    genes = mut$Hugo_Symbol[1:10],
+                    annotation = clin_2,
+                    color=c("background"="#CCCCCC","DEL"="purple","INS"="yellow","SNP"="brown"),
+                    rows.font.size = 4,
+                    heatmap.legend.side = "right",
+                    dist.col = 0,
+                    label.font.size = 4)
+
+
+```
+
 
 

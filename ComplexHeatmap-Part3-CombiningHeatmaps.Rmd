@@ -75,6 +75,7 @@ ht3
 ```{r}
 ht1 + ht2 + ht3
 ```
+
 ```{r}
 ht1 %v% ht2 
 #ht3 cannot be added here since the ncol is different
@@ -85,14 +86,20 @@ ht1 %v% ht2
 library(circlize)
 col_rnorm = colorRamp2(c(-3, 0, 3), c("green", "white", "red"))
 col_runif = colorRamp2(c(0, 3), c("white", "orange"))
+
 col_letters = c("a" = "pink", "b" = "purple", "c" = "blue")
+
 ht1 = Heatmap(mat1, name = "rnorm", col = col_rnorm,
     row_title = "Heatmap 1", column_title = "Heatmap 1")
+ht1
+
 ht2 = Heatmap(mat2, name = "runif", col = col_runif,
     row_title = "Heatmap 2", column_title = "Heatmap 2")
 ht3 = Heatmap(le, name = "letters", col = col_letters)
 ht_list = ht1 + ht2 + ht3
 
+
+draw(ht_list)
 draw(ht_list, row_title = "Three heatmaps, row title", row_title_gp = gpar(col = "red"),
     column_title = "Three heatmaps, column title", column_title_gp = gpar(fontsize = 16))
 
@@ -125,6 +132,7 @@ ht1 = Heatmap(mat1, name = "rnorm", col = col_rnorm)
 ht2 = Heatmap(mat2, name = "runif", col = col_runif)
 ht3 = Heatmap(le, name = "letters", col = col_letters)
 ht_list = ht1 + ht2 + ht3
+
 draw(ht_list, ht_gap = unit(1, "cm"))
 ```
 
